@@ -6,19 +6,24 @@
         <router-link to="/" class="hover:text-indigo-300">Products</router-link>
         <router-link to="/orders" class="hover:text-indigo-300">Orders</router-link>
         <router-link to="/admin" class="hover:text-indigo-300">Admin</router-link>
-        
+
         <router-link to="/cart" class="relative hover:text-indigo-300">
           Cart
-          <span v-if="cartStore.totalCount > 0" class="absolute -top-2 -right-3 bg-red-500 text-xs px-1.5 py-0.5 rounded-full font-bold">
+          <span v-if="cartStore.totalCount > 0"
+            class="absolute -top-2 -right-3 bg-red-500 text-xs px-1.5 py-0.5 rounded-full font-bold">
             {{ cartStore.totalCount }}
           </span>
         </router-link>
 
         <div v-if="authStore.accessToken" class="flex items-center space-x-3 border-l border-slate-700 pl-4">
-          <span class="text-sm text-slate-300">{{ authStore.user?.name || 'User' }}</span>
-          <button @click="authStore.logout()" class="text-xs bg-slate-800 hover:bg-slate-700 px-2 py-1 rounded">Logout</button>
+          <router-link to="/profile" class="text-sm font-semibold text-slate-300 hover:text-white cursor-pointer">
+            {{ authStore.user?.name || 'Profile' }}
+          </router-link>
+          <button @click="authStore.logout()"
+            class="text-xs bg-slate-800 hover:bg-slate-700 px-2 py-1 rounded">Logout</button>
         </div>
-        <router-link v-else to="/login" class="bg-indigo-600 hover:bg-indigo-500 text-xs px-3 py-1.5 rounded font-semibold">Login</router-link>
+        <router-link v-else to="/login"
+          class="bg-indigo-600 hover:bg-indigo-500 text-xs px-3 py-1.5 rounded font-semibold">Login</router-link>
       </nav>
     </div>
   </header>
