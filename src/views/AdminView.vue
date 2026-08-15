@@ -16,6 +16,10 @@
             <label class="block text-sm font-medium text-slate-700 mb-1">Description</label>
             <textarea v-model="product.description" required rows="2" class="w-full rounded-lg border p-2 outline-none focus:border-indigo-500"></textarea>
           </div>
+          <div>
+            <label class="block text-sm font-medium text-slate-700 mb-1">Category</label>
+            <input v-model="product.category" type="text" required class="w-full rounded-lg border p-2 outline-none focus:border-indigo-500" placeholder="e.g. Electronics, Clothing" />
+          </div>
           <div class="grid grid-cols-2 gap-3">
             <div>
               <label class="block text-sm font-medium text-slate-700 mb-1">Price</label>
@@ -43,7 +47,7 @@
         <div v-if="loadingProducts" class="text-center py-8 text-slate-500">Loading products...</div>
         <div v-else-if="productsList.length === 0" class="text-center py-8 text-slate-500">No products available.</div>
         
-        <div v-else class="space-y-3 max-h-[600px] overflow-y-auto pr-2">
+        <div v-else class="space-y-3 max-h-96 overflow-y-auto pr-2">
           <div v-for="p in productsList" :key="p.id" class="flex items-center justify-between border-b pb-3">
             <div class="flex items-center space-x-4">
               <div class="h-12 w-12 bg-slate-100 rounded flex items-center justify-center overflow-hidden border">
@@ -52,7 +56,7 @@
               </div>
               <div>
                 <h3 class="font-semibold text-slate-800">{{ p.name }}</h3>
-                <p class="text-xs text-slate-500">LKR {{ p.price }} | Stock: {{ p.stockQuantity }}</p>
+                <p class="text-xs text-slate-500">LKR {{ p.price }} | Stock: {{ p.stockQuantity }} | Cat: {{ p.category }}</p>
               </div>
             </div>
             <button @click="deleteProduct(p.id)" class="text-red-500 hover:bg-red-50 px-3 py-1.5 rounded-lg text-sm font-semibold border border-transparent hover:border-red-200 transition">
@@ -71,7 +75,7 @@ import { ref, onMounted } from 'vue';
 import apiClient from '../api/axios';
 
 // Add Product State
-const product = ref({ name: '', description: '', price: '', stockQuantity: '' });
+const product = ref({ name: '', description: '', price: '', stockQuantity: '', category: '' });
 const imageFile = ref(null);
 const loading = ref(false);
 
@@ -107,6 +111,8 @@ const addProduct = async () => {
     formData.append('description', product.value.description);
     formData.append('price', product.value.price);
     formData.append('stockQuantity', product.value.stockQuantity);
+    formData.append('category', product.value.category); // Category එක මෙතනින් යවයි
+    
     if (imageFile.value) formData.append('image', imageFile.value);
 
     await apiClient.post('/api/v1/products', formData, {
@@ -114,7 +120,9 @@ const addProduct = async () => {
     });
     
     alert('Product added successfully!');
-    product.value = { name: '', description: '', price: '', stockQuantity: '' };
+    
+    // Form එක හිස් කරන විට category එකත් හිස් කිරීම
+    product.value = { name: '', description: '', price: '', stockQuantity: '', category: '' };
     imageFile.value = null;
     
     // ලැයිස්තුව යාවත්කාලීන කිරීම
