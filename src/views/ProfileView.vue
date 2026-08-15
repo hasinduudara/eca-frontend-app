@@ -47,6 +47,7 @@
 import { ref, onMounted } from 'vue';
 import { useAuthStore } from '../stores/auth';
 import apiClient from '../api/axios';
+import Swal from 'sweetalert2';
 
 const authStore = useAuthStore();
 const loading = ref(false);
@@ -82,13 +83,23 @@ const updateProfile = async () => {
       headers: { 'Content-Type': 'multipart/form-data' }
     });
     
-    // Store එක යාවත්කාලීන කිරීම
+    // Update store
     authStore.user = res.data;
     localStorage.setItem('user', JSON.stringify(res.data));
     
-    alert('Profile updated successfully!');
+    Swal.fire({
+      icon: 'success',
+      title: 'Updated!',
+      text: 'Profile updated successfully!',
+      timer: 2000,
+      showConfirmButton: false
+    });
   } catch (error) {
-    alert('Failed to update profile.');
+    Swal.fire({
+      icon: 'error',
+      title: 'Oops...',
+      text: 'Failed to update profile.',
+    });
   } finally {
     loading.value = false;
   }

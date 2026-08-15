@@ -38,6 +38,7 @@
 import { ref } from 'vue';
 import apiClient from '../api/axios';
 import { useRouter } from 'vue-router';
+import Swal from 'sweetalert2';
 
 const name = ref('');
 const email = ref('');
@@ -65,10 +66,21 @@ const handleRegister = async () => {
       headers: { 'Content-Type': 'multipart/form-data' }
     });
     
-    alert('Registration successful! Please login.');
+    Swal.fire({
+      icon: 'success',
+      title: 'Registered!',
+      text: 'Registration successful! Please login.',
+      timer: 2500,
+      showConfirmButton: false
+    });
+    
     router.push('/login');
   } catch (error) {
-    alert('Registration failed. Please try again.');
+    Swal.fire({
+      icon: 'error',
+      title: 'Oops...',
+      text: 'Registration failed. Please try again.',
+    });
   } finally {
     loading.value = false;
   }

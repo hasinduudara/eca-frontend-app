@@ -33,6 +33,7 @@
 import { ref } from 'vue';
 import { useAuthStore } from '../stores/auth';
 import { useRouter } from 'vue-router';
+import Swal from 'sweetalert2'; // Import SweetAlert2
 
 const email = ref('');
 const password = ref('');
@@ -45,13 +46,27 @@ const handleLogin = async () => {
   try {
     await authStore.login(email.value, password.value);
     
+    // Show success alert
+    Swal.fire({
+      icon: 'success',
+      title: 'Welcome Back!',
+      text: 'You have successfully logged in.',
+      timer: 2000,
+      showConfirmButton: false
+    });
+    
     if (authStore.user?.role === 'ROLE_ADMIN') {
       router.push('/admin');
     } else {
       router.push('/products');
     }
   } catch (error) {
-    alert('Login failed. Please check your credentials.');
+    // Show error alert
+    Swal.fire({
+      icon: 'error',
+      title: 'Login Failed',
+      text: 'Please check your email and password.',
+    });
   } finally {
     loading.value = false;
   }

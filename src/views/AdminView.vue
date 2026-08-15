@@ -64,7 +64,7 @@
         <div v-if="loadingProducts" class="text-center py-8 text-slate-500">Loading products...</div>
         <div v-else-if="productsList.length === 0" class="text-center py-8 text-slate-500">No products available.</div>
         
-        <div v-else class="space-y-3 max-h-[600px] overflow-y-auto pr-2">
+        <div v-else class="space-y-3 max-h-150 overflow-y-auto pr-2">
           <div v-for="p in productsList" :key="p.id" class="flex items-center justify-between border-b pb-3">
             <div class="flex items-center space-x-4">
               <div class="h-12 w-12 bg-slate-100 rounded flex items-center justify-center overflow-hidden border">

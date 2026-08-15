@@ -43,6 +43,7 @@
 import { ref } from 'vue';
 import apiClient from '../api/axios';
 import { useRouter } from 'vue-router';
+import Swal from 'sweetalert2';
 
 const email = ref('');
 const otp = ref('');
@@ -56,8 +57,20 @@ const requestOtp = async () => {
   try {
     await apiClient.post('/api/v1/users/forgot-password', { email: email.value });
     otpSent.value = true;
+    
+    Swal.fire({
+      icon: 'info',
+      title: 'OTP Sent',
+      text: 'Please check your email for the OTP.',
+      timer: 2500,
+      showConfirmButton: false
+    });
   } catch (error) {
-    alert('Failed to send OTP. Please check your email.');
+    Swal.fire({
+      icon: 'error',
+      title: 'Failed',
+      text: 'Failed to send OTP. Please check your email address.',
+    });
   } finally {
     loading.value = false;
   }
@@ -71,10 +84,22 @@ const resetPassword = async () => {
       otp: otp.value,
       newPassword: newPassword.value
     });
-    alert('Password reset successfully! Please login with your new password.');
+    
+    Swal.fire({
+      icon: 'success',
+      title: 'Password Reset',
+      text: 'Password reset successfully! Please login with your new password.',
+      timer: 3000,
+      showConfirmButton: false
+    });
+    
     router.push('/login');
   } catch (error) {
-    alert('Failed to reset password. Invalid OTP.');
+    Swal.fire({
+      icon: 'error',
+      title: 'Invalid OTP',
+      text: 'Failed to reset password. Please verify your OTP.',
+    });
   } finally {
     loading.value = false;
   }
