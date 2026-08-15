@@ -7,11 +7,9 @@
       <!-- Add / Update Product Form -->
       <div class="lg:col-span-1 bg-white rounded-xl shadow-sm border p-6 h-fit">
         <div class="flex justify-between items-center mb-4">
-          <!-- Dynamic Title based on state -->
           <h2 class="text-lg font-bold text-slate-700">
             {{ isEditing ? 'Update Product' : 'Add New Product' }}
           </h2>
-          <!-- Cancel Edit Button -->
           <button v-if="isEditing" @click="cancelEdit" class="text-xs text-slate-500 hover:text-red-500 underline">
             Cancel Edit
           </button>
@@ -40,14 +38,23 @@
               <input v-model="product.stockQuantity" type="number" required class="w-full rounded-lg border p-2 outline-none" />
             </div>
           </div>
+          
+          <!-- Image Upload with Preview -->
           <div>
             <label class="block text-sm font-medium text-slate-700 mb-1">
               Image <span v-if="isEditing" class="text-xs text-slate-400 font-normal">(Leave empty to keep current)</span>
             </label>
             <input @change="handleImageChange" type="file" accept="image/*" class="w-full text-xs border rounded p-1" />
+            
+            <!-- Preview Section -->
+            <div v-if="imagePreview" class="mt-3">
+              <span class="text-xs text-slate-500 mb-1 block">Image Preview:</span>
+              <div class="h-24 w-24 rounded-lg overflow-hidden border border-slate-200 shadow-sm">
+                <img :src="imagePreview" class="h-full w-full object-cover" alt="Preview" />
+              </div>
+            </div>
           </div>
           
-          <!-- Dynamic Button styling and text -->
           <button type="submit" :disabled="loading" 
             :class="[isEditing ? 'bg-indigo-600 hover:bg-indigo-500' : 'bg-emerald-600 hover:bg-emerald-500']" 
             class="w-full text-white font-bold py-2.5 rounded-lg transition mt-2">
@@ -77,7 +84,6 @@
               </div>
             </div>
             
-            <!-- Edit and Remove Buttons -->
             <div class="flex space-x-2">
               <button @click="editProduct(p)" class="text-indigo-600 hover:bg-indigo-50 px-3 py-1.5 rounded-lg text-sm font-semibold border border-transparent hover:border-indigo-200 transition">
                 Edit
@@ -102,6 +108,7 @@ import Swal from 'sweetalert2';
 // Form State
 const product = ref({ name: '', description: '', price: '', stockQuantity: '', category: '' });
 const imageFile = ref(null);
+const imagePreview = ref(null); // Added state for image preview URL
 const loading = ref(false);
 
 // Edit Mode Tracking
@@ -112,9 +119,19 @@ const editingProductId = ref(null);
 const productsList = ref([]);
 const loadingProducts = ref(true);
 
-const handleImageChange = (e) => { imageFile.value = e.target.files[0]; };
+// Handle file selection and generate preview URL
+const handleImageChange = (e) => { 
+  const file = e.target.files[0];
+  imageFile.value = file;
+  
+  if (file) {
+    // Generate a temporary local URL for the selected image
+    imagePreview.value = URL.createObjectURL(file);
+  } else {
+    imagePreview.value = null;
+  }
+};
 
-// Fetch products from the database
 const fetchProducts = async () => {
   loadingProducts.value = true;
   try {
@@ -131,7 +148,6 @@ onMounted(() => {
   fetchProducts();
 });
 
-// Populate form data when Edit button is clicked
 const editProduct = (p) => {
   isEditing.value = true;
   editingProductId.value = p.id;
@@ -143,17 +159,17 @@ const editProduct = (p) => {
     category: p.category || ''
   };
   imageFile.value = null;
+  imagePreview.value = null; // Clear preview when editing starts
 };
 
-// Cancel edit mode and reset form
 const cancelEdit = () => {
   isEditing.value = false;
   editingProductId.value = null;
   product.value = { name: '', description: '', price: '', stockQuantity: '', category: '' };
   imageFile.value = null;
+  imagePreview.value = null; // Clear preview on cancel
 };
 
-// Handle form submission for both Add and Update
 const submitForm = async () => {
   if (isEditing.value) {
     await updateProduct();
@@ -162,7 +178,6 @@ const submitForm = async () => {
   }
 };
 
-// Add a new product
 const addProduct = async () => {
   loading.value = true;
   try {
@@ -179,7 +194,6 @@ const addProduct = async () => {
       headers: { 'Content-Type': 'multipart/form-data' }
     });
     
-    // Display success alert
     Swal.fire({
       icon: 'success',
       title: 'Success!',
@@ -201,7 +215,6 @@ const addProduct = async () => {
   }
 };
 
-// Update an existing product
 const updateProduct = async () => {
   loading.value = true;
   try {
@@ -239,9 +252,7 @@ const updateProduct = async () => {
   }
 };
 
-// Delete a product
 const deleteProduct = async (id) => {
-  // Display confirmation dialog
   const result = await Swal.fire({
     title: 'Are you sure?',
     text: "You won't be able to revert this!",
@@ -252,7 +263,6 @@ const deleteProduct = async (id) => {
     confirmButtonText: 'Yes, remove it!'
   });
 
-  // Return if user cancels
   if (!result.isConfirmed) return;
   
   try {
@@ -263,7 +273,6 @@ const deleteProduct = async (id) => {
       cancelEdit();
     }
     
-    // Display success alert after deletion
     Swal.fire({
       icon: 'success',
       title: 'Deleted!',

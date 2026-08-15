@@ -4,11 +4,23 @@
     
     <div v-if="authStore.user" class="bg-white rounded-xl shadow-sm border p-6">
       <div class="flex items-center space-x-6 mb-8">
-        <div class="h-24 w-24 bg-slate-200 rounded-full overflow-hidden flex items-center justify-center border">
-          <img v-if="authStore.user.profileImageUrl" :src="authStore.user.profileImageUrl" class="h-full w-full object-cover" />
+        
+        <!-- Current Profile Image -->
+        <div class="h-24 w-24 bg-slate-200 rounded-full overflow-hidden flex items-center justify-center border shadow-sm">
+          <img v-if="authStore.user.profileImageUrl" :src="authStore.user.profileImageUrl" class="h-full w-full object-cover" alt="Profile" />
           <span v-else class="text-slate-400 font-bold text-2xl">{{ authStore.user.name.charAt(0) }}</span>
         </div>
-        <div>
+        
+        <!-- New Image Preview (Shows only when a new image is selected) -->
+        <div v-if="imagePreview" class="flex items-center space-x-4">
+          <span class="text-slate-400 text-sm">➡</span>
+          <div class="h-24 w-24 bg-indigo-50 rounded-full overflow-hidden flex items-center justify-center border-2 border-indigo-500 shadow-md">
+            <img :src="imagePreview" class="h-full w-full object-cover" alt="New Preview" />
+          </div>
+          <span class="text-xs text-indigo-600 font-semibold bg-indigo-100 px-2 py-1 rounded-full">New</span>
+        </div>
+
+        <div v-if="!imagePreview">
           <h2 class="text-xl font-bold text-slate-800">{{ authStore.user.name }}</h2>
           <p class="text-slate-500">{{ authStore.user.email }}</p>
         </div>
@@ -52,6 +64,7 @@ import Swal from 'sweetalert2';
 const authStore = useAuthStore();
 const loading = ref(false);
 const imageFile = ref(null);
+const imagePreview = ref(null); // Added state for preview URL
 
 const editForm = ref({
   name: '',
@@ -65,8 +78,17 @@ onMounted(() => {
   }
 });
 
+// Handle file selection and generate preview URL
 const handleImageChange = (e) => {
-  imageFile.value = e.target.files[0];
+  const file = e.target.files[0];
+  imageFile.value = file;
+
+  if (file) {
+    // Generate a temporary local URL for the selected profile image
+    imagePreview.value = URL.createObjectURL(file);
+  } else {
+    imagePreview.value = null;
+  }
 };
 
 const updateProfile = async () => {
@@ -83,7 +105,7 @@ const updateProfile = async () => {
       headers: { 'Content-Type': 'multipart/form-data' }
     });
     
-    // Update store
+    // Update store and local storage
     authStore.user = res.data;
     localStorage.setItem('user', JSON.stringify(res.data));
     
@@ -94,6 +116,11 @@ const updateProfile = async () => {
       timer: 2000,
       showConfirmButton: false
     });
+
+    // Clear the preview state after successful upload
+    imagePreview.value = null;
+    imageFile.value = null;
+
   } catch (error) {
     Swal.fire({
       icon: 'error',
