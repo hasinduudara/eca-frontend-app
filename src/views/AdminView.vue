@@ -7,9 +7,11 @@
       <!-- Add / Update Product Form -->
       <div class="lg:col-span-1 bg-white rounded-xl shadow-sm border p-6 h-fit">
         <div class="flex justify-between items-center mb-4">
+          <!-- Dynamic Title based on state -->
           <h2 class="text-lg font-bold text-slate-700">
             {{ isEditing ? 'Update Product' : 'Add New Product' }}
           </h2>
+          <!-- Cancel Edit Button -->
           <button v-if="isEditing" @click="cancelEdit" class="text-xs text-slate-500 hover:text-red-500 underline">
             Cancel Edit
           </button>
@@ -45,6 +47,7 @@
             <input @change="handleImageChange" type="file" accept="image/*" class="w-full text-xs border rounded p-1" />
           </div>
           
+          <!-- Dynamic Button styling and text -->
           <button type="submit" :disabled="loading" 
             :class="[isEditing ? 'bg-indigo-600 hover:bg-indigo-500' : 'bg-emerald-600 hover:bg-emerald-500']" 
             class="w-full text-white font-bold py-2.5 rounded-lg transition mt-2">
@@ -61,7 +64,7 @@
         <div v-if="loadingProducts" class="text-center py-8 text-slate-500">Loading products...</div>
         <div v-else-if="productsList.length === 0" class="text-center py-8 text-slate-500">No products available.</div>
         
-        <div v-else class="space-y-3 max-h-150 overflow-y-auto pr-2">
+        <div v-else class="space-y-3 max-h-[600px] overflow-y-auto pr-2">
           <div v-for="p in productsList" :key="p.id" class="flex items-center justify-between border-b pb-3">
             <div class="flex items-center space-x-4">
               <div class="h-12 w-12 bg-slate-100 rounded flex items-center justify-center overflow-hidden border">
@@ -74,6 +77,7 @@
               </div>
             </div>
             
+            <!-- Edit and Remove Buttons -->
             <div class="flex space-x-2">
               <button @click="editProduct(p)" class="text-indigo-600 hover:bg-indigo-50 px-3 py-1.5 rounded-lg text-sm font-semibold border border-transparent hover:border-indigo-200 transition">
                 Edit
@@ -93,6 +97,7 @@
 <script setup>
 import { ref, onMounted } from 'vue';
 import apiClient from '../api/axios';
+import Swal from 'sweetalert2';
 
 // Form State
 const product = ref({ name: '', description: '', price: '', stockQuantity: '', category: '' });
@@ -109,6 +114,7 @@ const loadingProducts = ref(true);
 
 const handleImageChange = (e) => { imageFile.value = e.target.files[0]; };
 
+// Fetch products from the database
 const fetchProducts = async () => {
   loadingProducts.value = true;
   try {
@@ -125,6 +131,7 @@ onMounted(() => {
   fetchProducts();
 });
 
+// Populate form data when Edit button is clicked
 const editProduct = (p) => {
   isEditing.value = true;
   editingProductId.value = p.id;
@@ -135,9 +142,10 @@ const editProduct = (p) => {
     stockQuantity: p.stockQuantity,
     category: p.category || ''
   };
-  imageFile.value = null; 
+  imageFile.value = null;
 };
 
+// Cancel edit mode and reset form
 const cancelEdit = () => {
   isEditing.value = false;
   editingProductId.value = null;
@@ -145,6 +153,7 @@ const cancelEdit = () => {
   imageFile.value = null;
 };
 
+// Handle form submission for both Add and Update
 const submitForm = async () => {
   if (isEditing.value) {
     await updateProduct();
@@ -153,6 +162,7 @@ const submitForm = async () => {
   }
 };
 
+// Add a new product
 const addProduct = async () => {
   loading.value = true;
   try {
@@ -169,16 +179,29 @@ const addProduct = async () => {
       headers: { 'Content-Type': 'multipart/form-data' }
     });
     
-    alert('Product added successfully!');
+    // Display success alert
+    Swal.fire({
+      icon: 'success',
+      title: 'Success!',
+      text: 'Product added successfully!',
+      timer: 2500,
+      showConfirmButton: false
+    });
+    
     cancelEdit();
     fetchProducts();
   } catch (error) {
-    alert('Failed to add product.');
+    Swal.fire({
+      icon: 'error',
+      title: 'Oops...',
+      text: 'Failed to add product. Please try again!',
+    });
   } finally {
     loading.value = false;
   }
 };
 
+// Update an existing product
 const updateProduct = async () => {
   loading.value = true;
   try {
@@ -195,27 +218,65 @@ const updateProduct = async () => {
       headers: { 'Content-Type': 'multipart/form-data' }
     });
     
-    alert('Product updated successfully!');
+    Swal.fire({
+      icon: 'success',
+      title: 'Updated!',
+      text: 'Product updated successfully!',
+      timer: 2500,
+      showConfirmButton: false
+    });
+    
     cancelEdit();
     fetchProducts();
   } catch (error) {
-    alert('Failed to update product.');
+    Swal.fire({
+      icon: 'error',
+      title: 'Oops...',
+      text: 'Failed to update product.',
+    });
   } finally {
     loading.value = false;
   }
 };
 
+// Delete a product
 const deleteProduct = async (id) => {
-  if (!confirm('Are you sure you want to remove this product?')) return;
+  // Display confirmation dialog
+  const result = await Swal.fire({
+    title: 'Are you sure?',
+    text: "You won't be able to revert this!",
+    icon: 'warning',
+    showCancelButton: true,
+    confirmButtonColor: '#ef4444',
+    cancelButtonColor: '#94a3b8',
+    confirmButtonText: 'Yes, remove it!'
+  });
+
+  // Return if user cancels
+  if (!result.isConfirmed) return;
   
   try {
     await apiClient.delete(`/api/v1/products/${id}`);
     productsList.value = productsList.value.filter(p => p.id !== id);
+    
     if (isEditing.value && editingProductId.value === id) {
       cancelEdit();
     }
+    
+    // Display success alert after deletion
+    Swal.fire({
+      icon: 'success',
+      title: 'Deleted!',
+      text: 'The product has been removed.',
+      timer: 2000,
+      showConfirmButton: false
+    });
   } catch (error) {
-    alert('Failed to delete product.');
+    Swal.fire({
+      icon: 'error',
+      title: 'Oops...',
+      text: 'Failed to delete product.',
+    });
   }
 };
 </script>
