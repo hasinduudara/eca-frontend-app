@@ -26,19 +26,18 @@ const router = createRouter({
   ]
 });
 
-router.beforeEach((to, from, next) => {
+
+router.beforeEach((to, from) => {
   const authStore = useAuthStore();
   
-  // Admin Guard එක
   if (to.path === '/admin') {
     if (authStore.user && authStore.user.role === 'ROLE_ADMIN') {
-      next(); 
+      return true; 
     } else {
-      next('/products'); // සාමාන්‍ය කෙනෙක් නම් Products පිටුවට හරවා යවයි
+      return '/products'; 
     }
-  } else {
-    next(); 
   }
+  return true; 
 });
 
 export default router;
