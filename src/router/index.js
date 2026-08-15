@@ -1,4 +1,7 @@
 import { createRouter, createWebHistory } from 'vue-router';
+import { useAuthStore } from '../stores/auth';
+
+import WelcomeView from '../views/WelcomeView.vue';
 import ProductsView from '../views/ProductsView.vue';
 import CartView from '../views/CartView.vue';
 import OrdersView from '../views/OrdersView.vue';
@@ -11,7 +14,8 @@ import ProfileView from '../views/ProfileView.vue';
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
-    { path: '/', name: 'home', component: ProductsView },
+    { path: '/', name: 'welcome', component: WelcomeView },
+    { path: '/products', name: 'products', component: ProductsView },
     { path: '/cart', name: 'cart', component: CartView },
     { path: '/orders', name: 'orders', component: OrdersView },
     { path: '/login', name: 'login', component: LoginView },
@@ -20,6 +24,21 @@ const router = createRouter({
     { path: '/forgot-password', name: 'forgot-password', component: ForgotPasswordView },
     { path: '/profile', name: 'profile', component: ProfileView }
   ]
+});
+
+router.beforeEach((to, from, next) => {
+  const authStore = useAuthStore();
+  
+  // Admin Guard එක
+  if (to.path === '/admin') {
+    if (authStore.user && authStore.user.role === 'ROLE_ADMIN') {
+      next(); 
+    } else {
+      next('/products'); // සාමාන්‍ය කෙනෙක් නම් Products පිටුවට හරවා යවයි
+    }
+  } else {
+    next(); 
+  }
 });
 
 export default router;

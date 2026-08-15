@@ -36,11 +36,18 @@ const loading = ref(false);
 const authStore = useAuthStore();
 const router = useRouter();
 
+// LoginView.vue ඇතුළත
 const handleLogin = async () => {
   loading.value = true;
   try {
-    await authStore.login(email.value, password.value);
-    router.push('/'); // Login වූ පසු Home (Products) පිටුවට යැවීම
+    const res = await authStore.login(email.value, password.value);
+    
+    // Role එක අනුව පිටුව තීරණය කිරීම
+    if (authStore.user?.role === 'ROLE_ADMIN') {
+      router.push('/admin'); // Admin ගේ පිටුවට
+    } else {
+      router.push('/products'); // සාමාන්‍ය කෙනාගේ පිටුවට
+    }
   } catch (error) {
     alert('Login failed. Please check your credentials.');
   } finally {
