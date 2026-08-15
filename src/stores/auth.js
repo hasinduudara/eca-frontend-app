@@ -12,7 +12,6 @@ export const useAuthStore = defineStore('auth', {
       this.accessToken = response.data.accessToken;
       localStorage.setItem('accessToken', this.accessToken);
       
-      // User තොරතුරු ලබාගැනීම (Payload එකෙන් හෝ වෙනම API එකෙන්)
       if (response.data.userId) {
         const userRes = await apiClient.get(`/api/v1/users/${response.data.userId}`);
         this.user = userRes.data;
