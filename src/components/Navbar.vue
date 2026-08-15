@@ -6,7 +6,6 @@
       
       <nav class="flex items-center space-x-6">
         
-        <!-- සාමාන්‍ය පරිශීලකයින් සඳහා පමණක් පෙනෙන ලින්ක් (Admin නොවන විට) -->
         <template v-if="authStore.user?.role !== 'ROLE_ADMIN'">
           <router-link to="/products" class="hover:text-indigo-300">Products</router-link>
           <router-link to="/orders" class="hover:text-indigo-300">My Orders</router-link>
@@ -18,13 +17,12 @@
           </router-link>
         </template>
 
-        <!-- Admin සඳහා පමණක් පෙනෙන ලින්ක් -->
         <template v-if="authStore.user?.role === 'ROLE_ADMIN'">
           <router-link to="/admin" class="hover:text-indigo-300">Manage Products</router-link>
           <router-link to="/orders" class="hover:text-indigo-300">All Orders</router-link>
         </template>
 
-        <!-- Profile සහ Logout (දෙපාර්ශවයටම පොදුයි) -->
+        <!-- Profile සහ Logout -->
         <div v-if="authStore.accessToken" class="flex items-center space-x-4 border-l border-slate-700 pl-4 ml-2">
           <router-link to="/profile" class="text-sm font-semibold text-slate-300 hover:text-white cursor-pointer">
             {{ authStore.user?.name || 'Profile' }}
@@ -52,7 +50,6 @@ const authStore = useAuthStore();
 const cartStore = useCartStore();
 const router = useRouter();
 
-// Logout වූ පසු Welcome Page එකට යොමු කිරීම
 const handleLogout = () => {
   authStore.logout();
   router.push('/'); 
