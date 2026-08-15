@@ -5,12 +5,16 @@
     <form @submit.prevent="handleLogin" class="space-y-5">
       <div>
         <label class="block text-sm font-medium text-slate-700 mb-1">Email Address</label>
-        <input v-model="email" type="email" required class="w-full rounded-lg border-slate-300 border p-2.5 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 outline-none" placeholder="john@example.com" />
+        <input v-model="email" type="email" required class="w-full rounded-lg border-slate-300 border p-2.5 focus:border-indigo-500 focus:ring-1 outline-none" placeholder="john@example.com" />
       </div>
       
       <div>
-        <label class="block text-sm font-medium text-slate-700 mb-1">Password</label>
-        <input v-model="password" type="password" required class="w-full rounded-lg border-slate-300 border p-2.5 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 outline-none" placeholder="••••••••" />
+        <div class="flex justify-between items-center mb-1">
+          <label class="block text-sm font-medium text-slate-700">Password</label>
+          <!-- Forgot Password ලින්ක් එක -->
+          <router-link to="/forgot-password" class="text-xs text-indigo-600 hover:underline font-medium">Forgot password?</router-link>
+        </div>
+        <input v-model="password" type="password" required class="w-full rounded-lg border-slate-300 border p-2.5 focus:border-indigo-500 focus:ring-1 outline-none" placeholder="••••••••" />
       </div>
 
       <button type="submit" :disabled="loading" class="w-full bg-indigo-600 text-white font-bold py-3 px-4 rounded-lg hover:bg-indigo-500 transition disabled:opacity-70">
@@ -36,17 +40,15 @@ const loading = ref(false);
 const authStore = useAuthStore();
 const router = useRouter();
 
-// LoginView.vue ඇතුළත
 const handleLogin = async () => {
   loading.value = true;
   try {
-    const res = await authStore.login(email.value, password.value);
+    await authStore.login(email.value, password.value);
     
-    // Role එක අනුව පිටුව තීරණය කිරීම
     if (authStore.user?.role === 'ROLE_ADMIN') {
-      router.push('/admin'); // Admin ගේ පිටුවට
+      router.push('/admin');
     } else {
-      router.push('/products'); // සාමාන්‍ය කෙනාගේ පිටුවට
+      router.push('/products');
     }
   } catch (error) {
     alert('Login failed. Please check your credentials.');
