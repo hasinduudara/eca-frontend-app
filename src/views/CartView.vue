@@ -4,7 +4,8 @@
     
     <div v-if="cartStore.items.length === 0" class="text-center py-12 bg-white rounded-xl border">
       <p class="text-slate-500">Your cart is empty.</p>
-      <router-link to="/" class="mt-4 inline-block text-indigo-600 font-semibold">Browse Products</router-link>
+      <!-- Updated link to point to products page -->
+      <router-link to="/products" class="mt-4 inline-block text-indigo-600 font-semibold">Browse Products</router-link>
     </div>
 
     <div v-else class="bg-white rounded-xl border p-6 space-y-4 shadow-sm">
@@ -30,10 +31,6 @@
         class="w-full bg-emerald-600 disabled:bg-slate-300 text-white py-3 rounded-xl font-bold hover:bg-emerald-500 transition">
         {{ processing ? 'Placing Order...' : 'Place Order' }}
       </button>
-
-      <p v-if="orderMessage" class="mt-4 p-3 bg-emerald-50 border border-emerald-200 text-emerald-700 text-sm rounded-lg">
-        {{ orderMessage }}
-      </p>
     </div>
   </div>
 </template>
@@ -42,21 +39,41 @@
 import { ref } from 'vue';
 import { useCartStore } from '../stores/cart';
 import { useAuthStore } from '../stores/auth';
+import { useRouter } from 'vue-router';
+import Swal from 'sweetalert2';
 
 const cartStore = useCartStore();
 const authStore = useAuthStore();
+const router = useRouter();
 const processing = ref(false);
-const orderMessage = ref('');
 
 const handleCheckout = async () => {
   processing.value = true;
-  orderMessage.value = '';
   try {
     const userId = authStore.user?.id || 1;
-    const res = await cartStore.checkout(userId);
-    orderMessage.value = res;
+    
+    // Process the checkout via the store
+    await cartStore.checkout(userId);
+    
+    // Show success alert using SweetAlert2
+    Swal.fire({
+      icon: 'success',
+      title: 'Order Placed!',
+      text: 'Your order has been placed successfully.',
+      timer: 2500,
+      showConfirmButton: false
+    });
+
+    // Redirect user to the orders history page
+    router.push('/orders');
+    
   } catch (err) {
-    alert('Failed to place order: ' + (err.response?.data?.message || err.message));
+    // Show error alert using SweetAlert2
+    Swal.fire({
+      icon: 'error',
+      title: 'Checkout Failed',
+      text: err.response?.data?.message || err.message || 'Failed to place order. Please try again.',
+    });
   } finally {
     processing.value = false;
   }
